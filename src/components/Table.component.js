@@ -287,33 +287,7 @@ class EditableTable extends React.Component {
     localStorage.setItem(id, JSON.stringify(json));
   }
 
-  loadTableFromHistory = key => {
-    var table = JSON.parse(localStorage.getItem(key));
-    
-    for(var i = 0; i < table.columns.length; i++) {
-      console.log(table.columns[i].dataIndex)
-      if(table.columns[i].dataIndex === 'operation') {
-        console.log('operation')
-        table.columns[i].render = (text, record) => {
-          return (
-            <Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record.key)}>
-              <span style={{ color: 'red' }}><b>№{record.key}</b></span>
-            </Popconfirm>
-          )
-        }
-      } 
-      if (table.columns[i].dataIndex === 'checkbox') {
-        let columnKey = table.columns[i].key;
-        console.log('columnKey')
-        console.log(columnKey)
-        table.columns[i].render = (text, record) => {
-          return (
-            <Checkbox checked={record.splitters.includes(columnKey)} onChange={() => this.onChangeCheckBox(record.key, columnKey)}/>
-          )
-        }
-      }
-    } 
-
+  loadTableFromHistory = table => {
     this.setState({
       dataSource: table.dataSource,
       count: Math.max( ...table.dataSource.map(e => e.key)) + 1,
@@ -321,8 +295,6 @@ class EditableTable extends React.Component {
       totalSumm: 0,
       autoupdate: true
     });
-
-    console.log(table);
   }
   
   render() {
@@ -383,7 +355,11 @@ class EditableTable extends React.Component {
             onSearch={(value) => this.saveCurrentResult(value) }
           />
         </div>
-        <HistoryComponent loadTableFromHistory={this.loadTableFromHistory}></HistoryComponent>
+        <HistoryComponent 
+          loadTableFromHistory={this.loadTableFromHistory} 
+          onChangeCheckBox={this.onChangeCheckBox}
+          onDeleteRaw={this.handleDelete}
+        ></HistoryComponent>
       </div>
     );
   }
