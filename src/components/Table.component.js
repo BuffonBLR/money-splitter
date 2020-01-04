@@ -1,6 +1,7 @@
 import React from 'react';
 import { Table, Input, Button, Popconfirm, Form, Checkbox, Switch } from 'antd';
 import HistoryComponent from './History.component';
+import SaveTableComponent from './SaveTable.component';
 
 const { Search } = Input;
 const EditableContext = React.createContext();
@@ -275,18 +276,6 @@ class EditableTable extends React.Component {
     });
   }
 
-  saveCurrentResult = val => {
-    var { dataSource, columns } = this.state;
-    var json = {
-      name: val,
-      date: new Date().toISOString(),
-      dataSource: dataSource,
-      columns: columns
-    }
-    var id = 'splitter-' + new Date().getTime();
-    localStorage.setItem(id, JSON.stringify(json));
-  }
-
   loadTableFromHistory = table => {
     this.setState({
       dataSource: table.dataSource,
@@ -347,19 +336,15 @@ class EditableTable extends React.Component {
           <span> Autorecalculation </span>
           <Switch checked={this.state.autoupdate} onChange={this.onChangeAutoUpdate} ></Switch>
         </div>
-        <div>
-        <Search
-            placeholder="Title for Save"
-            enterButton="Save"
-            size="large"
-            onSearch={(value) => this.saveCurrentResult(value) }
-          />
-        </div>
+        <SaveTableComponent
+          dataSource={dataSource}
+          columns={columns}
+        />
         <HistoryComponent 
           loadTableFromHistory={this.loadTableFromHistory} 
           onChangeCheckBox={this.onChangeCheckBox}
           onDeleteRaw={this.handleDelete}
-        ></HistoryComponent>
+        />
       </div>
     );
   }
