@@ -1,6 +1,8 @@
 import React from 'react';
 import { Table, Input, Button, Popconfirm, Form, Checkbox, Switch } from 'antd';
+import HistoryComponent from './History.component';
 
+const { Search } = Input;
 const EditableContext = React.createContext();
 
 const EditableRow = ({ form, index, ...props }) => (
@@ -123,7 +125,7 @@ class EditableTable extends React.Component {
         align: 'center',
         key: 0,
         title: '№0',
-        dataIndex: '№0',
+        dataIndex: 'checkbox',
         render: (text, record) =>
         this.state.dataSource.length >= 1 ? (
           <Checkbox checked={record.splitters.includes(0)} onChange={() => this.onChangeCheckBox(record.key, 0)}/>
@@ -211,7 +213,7 @@ class EditableTable extends React.Component {
       align: 'center',
       key: count,
       title: `№${newData.key}`,
-      dataIndex: newData.name,
+      dataIndex: `checkbox`,
       render: (text, record) =>
       this.state.dataSource.length >= 1 ? (
         <Checkbox checked={record.splitters.includes(count)} onChange={() => this.onChangeCheckBox(record.key, count)}/>
@@ -234,11 +236,11 @@ class EditableTable extends React.Component {
     }
 
 
-    for(var i = 0; i < dataSource.length; i++) {
-      var count = dataSource[i].splitters.length;
-      var sumPerUnit = parseInt(dataSource[i].paid)/count
-      for(var j = 0; j < dataSource[i].splitters.length; j++) {
-        dataSource.filter(item => item.key === dataSource[i].splitters[j])[0].must += sumPerUnit;
+    for(var l = 0; l < dataSource.length; l++) {
+      var count = dataSource[l].splitters.length;
+      var sumPerUnit = parseInt(dataSource[l].paid)/count
+      for(var j = 0; j < dataSource[l].splitters.length; j++) {
+        dataSource.filter(item => item.key === dataSource[l].splitters[j])[0].must += sumPerUnit;
       }
     }
 
@@ -273,6 +275,56 @@ class EditableTable extends React.Component {
     });
   }
 
+  saveCurrentResult = val => {
+    var { dataSource, columns } = this.state;
+    var json = {
+      name: val,
+      date: new Date().toISOString(),
+      dataSource: dataSource,
+      columns: columns
+    }
+    var id = 'splitter-' + new Date().getTime();
+    localStorage.setItem(id, JSON.stringify(json));
+  }
+
+  loadTableFromHistory = key => {
+    var table = JSON.parse(localStorage.getItem(key));
+    
+    for(var i = 0; i < table.columns.length; i++) {
+      console.log(table.columns[i].dataIndex)
+      if(table.columns[i].dataIndex === 'operation') {
+        console.log('operation')
+        table.columns[i].render = (text, record) => {
+          return (
+            <Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record.key)}>
+              <span style={{ color: 'red' }}><b>№{record.key}</b></span>
+            </Popconfirm>
+          )
+        }
+      } 
+      if (table.columns[i].dataIndex === 'checkbox') {
+        let columnKey = table.columns[i].key;
+        console.log('columnKey')
+        console.log(columnKey)
+        table.columns[i].render = (text, record) => {
+          return (
+            <Checkbox checked={record.splitters.includes(columnKey)} onChange={() => this.onChangeCheckBox(record.key, columnKey)}/>
+          )
+        }
+      }
+    } 
+
+    this.setState({
+      dataSource: table.dataSource,
+      count: Math.max( ...table.dataSource.map(e => e.key)) + 1,
+      columns: table.columns,
+      totalSumm: 0,
+      autoupdate: true
+    });
+
+    console.log(table);
+  }
+  
   render() {
     var { dataSource, totalSumm} = this.state;
     const components = {
@@ -314,7 +366,8 @@ class EditableTable extends React.Component {
           <Button onClick={this.handleAdd} type="primary">
             Add a row
           </Button>
-          {!this.state.autoupdate && <Button onClick={this.handleRecalculate} type="primary" style={{marginLeft: 16. }}>
+          {!this.state.autoupdate && 
+          <Button onClick={this.handleRecalculate} type="primary" style={{marginLeft: 16. }}>
             Recalculate
           </Button>}
           <span style={{ marginLeft: 16. }}>TOTAL: {totalSumm}</span>
@@ -322,6 +375,15 @@ class EditableTable extends React.Component {
           <span> Autorecalculation </span>
           <Switch checked={this.state.autoupdate} onChange={this.onChangeAutoUpdate} ></Switch>
         </div>
+        <div>
+        <Search
+            placeholder="Title for Save"
+            enterButton="Save"
+            size="large"
+            onSearch={(value) => this.saveCurrentResult(value) }
+          />
+        </div>
+        <HistoryComponent loadTableFromHistory={this.loadTableFromHistory}></HistoryComponent>
       </div>
     );
   }
