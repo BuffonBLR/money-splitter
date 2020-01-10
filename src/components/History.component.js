@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { List, Popconfirm, Checkbox } from "antd";
+import { List, Popconfirm, Checkbox, Button } from "antd";
 
 class HistoryComponent extends Component {
 
@@ -26,6 +26,13 @@ class HistoryComponent extends Component {
 
   loadTable = key => {
     var table = JSON.parse(localStorage.getItem(key));
+    var totalSumm = 0;
+    const { dataSource } = table;
+
+    for(var i = 0; i< dataSource.length; i++) {
+      totalSumm += parseInt(dataSource[i].paid);
+    }
+
     for(var i = 0; i < table.columns.length; i++) {
       if(table.columns[i].dataIndex === 'operation') {
         table.columns[i].render = (text, record) => {
@@ -45,6 +52,7 @@ class HistoryComponent extends Component {
         }
       }
     }
+    table.totalSumm = totalSumm;
     this.props.loadTableFromHistory(table)
   }
 
@@ -55,7 +63,7 @@ class HistoryComponent extends Component {
         dataSource={this.state.data}
         renderItem={item => (
           <List.Item 
-            actions={[<button onClick={() => this.loadTable(item.key)}>load</button>]}
+            actions={[<Button type="primary" onClick={() => this.loadTable(item.key)}>Load</Button>]}
           >
             <List.Item.Meta
               title={item.title}

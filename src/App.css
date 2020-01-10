@@ -36,3 +36,7 @@
   padding: 2px 2px;
   overflow-wrap: break-word;
 }
+
+.App .ant-layout-sider-zero-width-trigger, .App .ant-layout-sider-zero-width-trigger:hover {
+  background: #192c3e69;
+}

@@ -13,7 +13,6 @@ const EditableRow = ({ form, index, ...props }) => (
 );
 
 const EditableFormRow = Form.create()(EditableRow);
-
 class EditableCell extends React.Component {
   state = {
     editing: false,
@@ -281,7 +280,7 @@ class EditableTable extends React.Component {
       dataSource: table.dataSource,
       count: Math.max( ...table.dataSource.map(e => e.key)) + 1,
       columns: table.columns,
-      totalSumm: 0,
+      totalSumm: table.totalSumm,
       autoupdate: true
     });
   }
